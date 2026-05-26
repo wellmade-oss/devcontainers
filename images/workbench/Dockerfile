@@ -138,6 +138,15 @@ RUN ARCH=$(dpkg --print-architecture) \
  && install -m 0755 "/tmp/linux-${ARCH}/helm" /usr/local/bin/helm \
  && rm -rf "/tmp/linux-${ARCH}"
 
+# Pre-create the directories devcontainer.json volume-mounts onto.
+# Empty named volumes inherit ownership from the image dir on first
+# attach, so these chowns ensure scw/op/kube start out wm-owned.
+RUN mkdir -p /home/wm/.config/scw \
+             /home/wm/.config/op \
+             /home/wm/.kube \
+             /home/wm/.cargo/registry \
+ && chown -R wm:wm /home/wm/.config /home/wm/.kube /home/wm/.cargo
+
 USER wm
 WORKDIR /home/wm
 

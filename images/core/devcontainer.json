@@ -4,11 +4,32 @@
   "remoteUser": "wm",
   "containerUser": "wm",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+  // ---------------------------------------------------------------------
+  // Persisted state — named Docker volumes survive container rebuilds.
+  //
+  // Convention:
+  //   wellmade-state-*  → credentials / auth / history. DON'T prune.
+  //   wellmade-cache-*  → caches. Safe to `docker volume prune` if needed.
+  //
+  // Skills are baked into the image at /opt/wellmade/atelier-ai. The
+  // symlink ~/.claude/skills → that path is recreated by postcreate.sh
+  // because the volume mount on ~/.claude/ shadows build-time setup.
+  // ---------------------------------------------------------------------
   "mounts": [
-    "source=wellmade-gh-config,target=/home/wm/.config/gh,type=volume",
-    "source=wellmade-claude-config,target=/home/wm/.claude,type=volume",
-    "source=wellmade-ssh,target=/home/wm/.ssh,type=volume"
+    // Claude Code: credentials, project history, settings, memory.
+    // ~/.claude.json (single file at $HOME root) is symlinked into this
+    // volume by postcreate.sh so it persists too.
+    "source=wellmade-state-claude,target=/home/wm/.claude,type=volume",
+
+    // GitHub + GitLab CLI auth.
+    "source=wellmade-state-gh,target=/home/wm/.config/gh,type=volume",
+    "source=wellmade-state-glab,target=/home/wm/.config/glab-cli,type=volume",
+
+    // SSH identity.
+    "source=wellmade-state-ssh,target=/home/wm/.ssh,type=volume"
   ],
+
   "customizations": {
     "vscode": {
       "extensions": [
@@ -22,5 +43,8 @@
       }
     }
   },
-  "postCreateCommand": "echo 'Wellmade core ready. Run claude to start an agent session.'"
+
+  // postCreateCommand runs once after volume mounts. Idempotent — safe on
+  // rebuilds. See /opt/wellmade/bin/postcreate.sh in the image.
+  "postCreateCommand": "/opt/wellmade/bin/postcreate.sh"
 }

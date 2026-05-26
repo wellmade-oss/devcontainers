@@ -99,25 +99,32 @@ RUN npm install -g @anthropic-ai/claude-code
 # step kept as a comment until the first wm release ships.
 # RUN curl -fsSL https://wellmade.be/wm/install.sh | sh
 
-# atelier-ai skills: cloned to a stable system path, skel'd into new
-# user homes so a fresh container has `.claude/` populated.
+# atelier-ai skills: cloned to a stable system path. The
+# ~/.claude/skills symlink is NOT created at build time — devcontainer.json
+# mounts a volume on ~/.claude/, which would shadow it. postcreate.sh
+# recreates it inside the volume on first container start.
 ARG ATELIER_AI_REF=main
 RUN git clone --depth=1 --branch "${ATELIER_AI_REF}" \
       https://github.com/wellmade-studio/atelier-ai.git \
-      /opt/wellmade/atelier-ai \
- && mkdir -p /etc/skel/.claude \
- && ln -s /opt/wellmade/atelier-ai/skills /etc/skel/.claude/skills
+      /opt/wellmade/atelier-ai
 
-# Materialize the skel into the existing user's home.
-USER ${USERNAME}
-RUN mkdir -p /home/${USERNAME}/.claude \
- && ln -s /opt/wellmade/atelier-ai/skills /home/${USERNAME}/.claude/skills
+# Container lifecycle script invoked by devcontainer.json postCreateCommand.
+COPY postcreate.sh /opt/wellmade/bin/postcreate.sh
+RUN chmod +x /opt/wellmade/bin/postcreate.sh \
+ && chown -R ${USERNAME}:${USERNAME} /opt/wellmade
 
-# Named volumes for CLI state (mounted by devcontainer.json so credentials
-# survive rebuilds — gh, claude config, ssh).
+# Pre-create the directories that devcontainer.json volume-mounts onto.
+# When Docker first attaches an empty named volume, it copies the image's
+# directory contents (including ownership) into the volume — so getting
+# ownership right HERE means the volume comes up wm-owned.
 RUN mkdir -p /home/${USERNAME}/.config/gh \
+             /home/${USERNAME}/.config/glab-cli \
              /home/${USERNAME}/.claude \
              /home/${USERNAME}/.ssh \
- && chmod 700 /home/${USERNAME}/.ssh
+ && chmod 700 /home/${USERNAME}/.ssh \
+ && chown -R ${USER_UID}:${USER_GID} /home/${USERNAME}
+
+USER ${USERNAME}
+WORKDIR /home/${USERNAME}
 
 CMD ["zsh", "-l"]

@@ -54,6 +54,27 @@ cp /path/to/devcontainers/images/workbench/devcontainer.json .devcontainer/
 Or use [`wm devcontainer`](../cli/) when it lands — it picks the
 right image from `catalog.toml` and writes the template for you.
 
+## Persisted state
+
+Both images mount named Docker volumes so credentials and project state
+survive container rebuilds. The naming convention signals reset-tolerance:
+
+| Prefix | Contents | Safe to `docker volume prune`? |
+|--------|----------|--------------------------------|
+| `wellmade-state-*` | Credentials, auth, project history (Claude, gh, glab, ssh, scw, op, kube) | **No** — you'd lose logins |
+| `wellmade-cache-*` | Build caches (cargo registry, etc.) | Yes — costs a cold install |
+
+On first start, `/opt/wellmade/bin/postcreate.sh` (idempotent) wires up:
+
+- `~/.claude/skills` → `/opt/wellmade/atelier-ai/skills` (recreated inside
+  the mounted volume so it isn't shadowed by the volume mount)
+- `~/.claude.json` → symlink into `~/.claude/` so the home-root file
+  persists alongside everything else Claude needs
+
+Loss-on-rebuild items (deliberately not persisted, to keep volume count
+small): `~/.gitconfig`, `~/.zsh_history`, npm/uv caches. Add a volume if
+you need them.
+
 ## Versioning
 
 - `:latest` — newest build of `main`
