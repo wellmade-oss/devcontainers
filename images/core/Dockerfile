@@ -16,7 +16,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     LC_ALL=C.UTF-8 \
     TZ=Etc/UTC \
-    SHELL=/bin/zsh
+    SHELL=/bin/zsh \
+    WELLMADE_DC=1
 
 # --- system layer ---------------------------------------------------------
 # One apt pass: base utilities, build tools, db clients, shells.
@@ -77,7 +78,20 @@ USER ${USERNAME}
 WORKDIR /home/${USERNAME}
 
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended \
- && sed -i 's|^ZSH_THEME=.*|ZSH_THEME="robbyrussell"|' /home/${USERNAME}/.zshrc
+ && sed -i 's|^ZSH_THEME=.*|ZSH_THEME="robbyrussell"|' /home/${USERNAME}/.zshrc \
+ && cat <<'ZSHRC_APPEND' >> /home/${USERNAME}/.zshrc
+
+# --- Wellmade devcontainer indicator ---
+# When this shell is running inside a Wellmade devcontainer image, the
+# Dockerfile sets WELLMADE_DC=1. Prepend a small purple `[dc]` to the
+# prompt so it's visually distinct from a host shell — the only thing
+# we need is "in container yes/no". The colour (256-palette 141, a light
+# lavender) stays outside robbyrussell's green/cyan/yellow palette so it
+# doesn't compete with the arrow / cwd / git status segments.
+if [[ -n "$WELLMADE_DC" ]]; then
+  PROMPT="%F{141}[dc]%f $PROMPT"
+fi
+ZSHRC_APPEND
 
 # --- node (needed only to install Claude CLI + wm at core level) ---------
 # We install Node here purely to host the agent layer. The `workbench`
