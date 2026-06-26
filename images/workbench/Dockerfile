@@ -134,7 +134,7 @@ RUN install -m 0755 -d /etc/apt/keyrings \
 # renovate: datasource=github-releases depName=kubernetes/kubernetes
 ARG KUBECTL_VERSION=v1.36.1
 # renovate: datasource=github-releases depName=helm/helm
-ARG HELM_VERSION=v4.2.0
+ARG HELM_VERSION=v4.2.2
 RUN ARCH=$(dpkg --print-architecture) \
  && curl -fsSL "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl" \
       -o /usr/local/bin/kubectl \
