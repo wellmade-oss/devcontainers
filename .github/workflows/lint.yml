@@ -26,7 +26,7 @@ jobs:
           - images/core/Dockerfile
           - images/workbench/Dockerfile
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: hadolint/hadolint-action@v3.3.0
         with:
           dockerfile: ${{ matrix.dockerfile }}
