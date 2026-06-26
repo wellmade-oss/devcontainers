@@ -152,17 +152,27 @@ footprint, common enough to justify.
 - **Breaking change → `:v2`.** Should be rare.
 
 **Auto-update mechanism:**
-- **Dependabot** (`.github/dependabot.yml`) for the Docker `FROM`
-  base image and the GitHub Actions in the build workflow.
-  GitHub-native, zero install. It does *not* see the
-  `ARG xxx_VERSION` pins our Dockerfiles use to download release
-  binaries by URL — that was the "pin coverage limitation" we
-  anticipated.
-- **Renovate** (`renovate.json`) covers exactly that gap: a
-  customManager reads the `# renovate:` annotation above each
-  tracked `ARG` (yq, glab, scw, act, kubectl, helm) and opens
-  bump PRs weekly. `NODE_MAJOR` is deliberately excluded — it's a
-  manual LTS floor, never auto-narrowed.
+- **Renovate** (`renovate.json`), run via the **Mend hosted
+  GitHub App** — *not* a self-hosted CI runner. This is a public
+  repo, so we deliberately keep any write-scoped token off our
+  own CI surface; Mend holds its own credentials and runs the
+  engine. The app is installed on `wellmade-studio`, scoped to
+  this repo only. Renovate's customManager reads the `# renovate:`
+  annotation above each tracked `ARG` (yq, glab, scw, act,
+  kubectl, helm + the OpenCode and Claude pins) and opens bump
+  PRs weekly. `NODE_MAJOR` is deliberately excluded — it's a
+  manual LTS floor, never auto-narrowed. The OpenCode pin tracks
+  the `anomalyco/opencode` *repo releases*, not an npm package
+  name (see the Dockerfile comment for why).
+- **Dependabot** (`.github/dependabot.yml`) — GitHub-native,
+  zero install. Originally added for the Docker `FROM` base image
+  *and* GitHub Actions. **Heads-up / cleanup:** now that Renovate
+  is active it also manages GitHub Actions, so Dependabot's
+  `github-actions` entry overlaps and both will open PRs for the
+  same Action bumps. Pick one owner for Actions (simplest: drop
+  the `github-actions` block from `dependabot.yml` and let
+  Renovate own it, leaving Dependabot to the `FROM` digests it's
+  good at — or disable Renovate's actions manager instead).
 - **Weekly cron rebuild** on the CI workflow so upstream apt /
   npm / pip patches flow through even when no Dockerfile commit
   happened.
