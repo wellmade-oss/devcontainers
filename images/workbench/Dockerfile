@@ -13,7 +13,9 @@ USER root
 # --- Node LTS toolchain ---------------------------------------------------
 # core already ships Node (for Claude CLI). Workbench locks it to current
 # LTS as the floor and adds the @wellmade lint stack + Turborepo.
-# Node LTS major bumps are picked up by Dependabot on this ARG.
+# NODE_MAJOR is a deliberate manual floor, not auto-bumped: we move it by
+# hand when a new Node LTS is adopted, never auto-narrow it (see CLAUDE.md
+# "Don't drop below Node LTS"). That's why renovate.json skips this ARG.
 # Node 24 (Krypton) is the current Active LTS as of 2026-05.
 ARG NODE_MAJOR=24
 RUN curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | bash - \
@@ -69,6 +71,7 @@ USER root
 # --- Cloud + IaC + secrets -----------------------------------------------
 # Scaleway CLI (EU-default). Asset names switched to amd64/arm64
 # (used to be x86_64) — dpkg --print-architecture matches directly now.
+# renovate: datasource=github-releases depName=scaleway/scaleway-cli
 ARG SCW_VERSION=2.56.1
 RUN ARCH=$(dpkg --print-architecture) \
  && curl -fsSL "https://github.com/scaleway/scaleway-cli/releases/download/v${SCW_VERSION}/scaleway-cli_${SCW_VERSION}_linux_${ARCH}" \
@@ -98,6 +101,7 @@ RUN curl -fsSL https://downloads.1password.com/linux/keys/1password.asc \
 # --- CI tooling: act -----------------------------------------------------
 # Local GitHub Actions runner. NEEDS host Docker socket mounted via
 # devcontainer.json (NOT Docker-in-Docker — that's deliberately rejected).
+# renovate: datasource=github-releases depName=nektos/act
 ARG ACT_VERSION=0.2.88
 RUN ARCH=$(dpkg --print-architecture); \
     case "$ARCH" in \
@@ -126,8 +130,10 @@ RUN install -m 0755 -d /etc/apt/keyrings \
 # debsig-keyring dance which behaves inconsistently under buildkit's
 # network sandbox against the k8s CDN. Tradeoff: no automatic updates via
 # `apt upgrade` — but the image's `:v1` tag is rebuilt weekly anyway, and
-# Dependabot bumps these ARGs.
+# Renovate bumps these ARGs (see renovate.json).
+# renovate: datasource=github-releases depName=kubernetes/kubernetes
 ARG KUBECTL_VERSION=v1.36.1
+# renovate: datasource=github-releases depName=helm/helm
 ARG HELM_VERSION=v4.2.0
 RUN ARCH=$(dpkg --print-architecture) \
  && curl -fsSL "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl" \

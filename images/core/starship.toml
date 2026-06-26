@@ -52,7 +52,12 @@ when = '''test -n "$WELLMADE_DC"'''
 command = 'echo "[dc]"'
 format = "[$output]($style) "
 style = "fg:141"
-shell = ["sh", "--noprofile", "--norc"]
+# Just `sh` — starship runs custom-module scripts non-interactively
+# already, so no profile-suppression flags are needed. The old
+# `--noprofile --norc` are bash-only; on images where /bin/sh is dash
+# they abort with "Illegal option --", silently failing the `when` test
+# so [dc] never rendered even with WELLMADE_DC set.
+shell = ["sh"]
 
 
 # --- directory ------------------------------------------------------------
@@ -70,7 +75,7 @@ format = "[$path]($style)"
 # starship lets us bake the parens into the module format string.
 [git_branch]
 symbol = ""
-format = "[ git:(](cyan)[$branch](bright-red)"
+format = "[ git:\\(](cyan)[$branch](bright-red)"
 truncation_length = 24
 
 
@@ -80,25 +85,29 @@ truncation_length = 24
 #   - ↓N for behind-upstream, in yellow ("you should pull")
 #   - ✗ for dirty working tree (unstaged + staged + untracked), in yellow
 #
-# starship combines all of these into one `git_status` module, but
-# we want different colors per indicator. The trick: render each
-# sub-indicator as a separately-styled token inside `format`, then
-# close the paren after.
+# starship combines all of these into one `git_status` module, but we
+# want different colors per indicator, so each sub-indicator is its own
+# styled token below.
+#
+# git_status only exposes two top-level vars: $all_status (expands the
+# modified/staged/untracked/conflicted keys) and $ahead_behind (expands
+# ahead/behind/diverged). $modified is NOT a top-level format var, so
+# referencing it directly renders nothing. We compose from the two real
+# vars and bake the leading space into each per-indicator string, so the
+# gap before the `)` only appears when an indicator is actually present:
+#   clean → git:(main)   dirty → git:(main ✗)
 [git_status]
-format = """([ ](cyan))\
-([$ahead_behind ](none))\
-([$modified](yellow))\
-[)](cyan)"""
+format = "[$all_status$ahead_behind](none)[\\)](cyan)"
 
-# Per-indicator format strings. Empty when count is zero, otherwise
-# the symbol + count in the right color.
-ahead = "[↑$count](green)"
-behind = "[↓$count](yellow)"
-diverged = "[↑$ahead_count](green)[ ](none)[↓$behind_count](yellow)"
-modified = "✗"
-staged = "[✗](yellow)"
-untracked = "[✗](yellow)"
-conflicted = "[!](red)"
+# Per-indicator format strings. Empty when count is zero, otherwise a
+# leading space + symbol + count in the right color.
+ahead = "[ ↑$count](green)"
+behind = "[ ↓$count](yellow)"
+diverged = "[ ↑$ahead_count](green)[ ↓$behind_count](yellow)"
+modified = "[ ✗](yellow)"
+staged = "[ ✗](yellow)"
+untracked = "[ ✗](yellow)"
+conflicted = "[ !](red)"
 renamed = ""
 deleted = ""
 stashed = ""
@@ -108,8 +117,8 @@ stashed = ""
 # Green when last command succeeded, red on non-zero exit.
 # (Same semantics as rr's arrow colour.)
 [character]
-success_symbol = "[ $](green)"
-error_symbol = "[ $](red)"
+success_symbol = "[ \\$](green)"
+error_symbol = "[ \\$](red)"
 
 
 # --- command duration -----------------------------------------------------

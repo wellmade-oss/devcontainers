@@ -35,9 +35,19 @@ If you're Claude Code reading this, the situation is:
   candidates if needs arise. Non-EU CLIs aren't banned — they go
   in opt-in variants when a customer needs them — but the
   *defaults* and the *flagship images* lean European.
-- **Agent-ready at the base.** Claude CLI + atelier-ai skills +
-  `wm` CLI live in `core` so every image is agent-ready out of
-  the box.
+- **Agent-ready — and agent-agnostic — at the base.** Two agents
+  live in `core`: **OpenCode** (the model-agnostic baseline —
+  Anthropic, OpenAI, Gemini, local Ollama; MIT; headless
+  `opencode run` for CI) and **Claude** (the accessory we reach
+  for; not model-agnostic, but atelier-ai's skills/hooks/templates
+  are built for it). Plus atelier-ai skills + the `wm` CLI. Every
+  image is agent-ready out of the box without being locked to one
+  agent. Both install as native binaries via their official
+  installers (no Node needed); core keeps Node anyway as a
+  convenience runtime, not an agent dependency. OpenCode here means
+  Anomaly's project (opencode.ai / `anomalyco/opencode`) — pinned
+  to that repo's releases, deliberately not the npm package name,
+  after the Anomaly/Charm naming split.
 - **No combinatorial variants.** No `workbench-aws`,
   `workbench-gcloud`. Customers who need a different cloud reach
   for `workbench` and add the CLI via a per-project Dockerfile.
@@ -61,7 +71,8 @@ That's it. Two images at launch.
   `gnupg`, `jq`, `yq`, `ripgrep`, `fd-find`, `tree`, `less`,
   `procps`, `build-essential`, `unzip`, `zip`, `xz-utils`,
   `postgresql-client`, `sqlite3`.
-- **Agent layer**: **Claude CLI**, **atelier-ai** skills (stable
+- **Agent layer**: **OpenCode** (model-agnostic baseline) +
+  **Claude** (native install), **atelier-ai** skills (stable
   install path; `.claude/` skel'd into new user homes), **`wm`
   CLI**, all on PATH.
 - **Not in core**: no language runtimes, no cloud CLIs, no IaC
@@ -141,9 +152,17 @@ footprint, common enough to justify.
 - **Breaking change → `:v2`.** Should be rare.
 
 **Auto-update mechanism:**
-- **Dependabot** on the Dockerfiles for base image digests +
-  pinnable deps. GitHub-native, zero install. If pin coverage
-  becomes a limitation, swap to Renovate — small migration.
+- **Dependabot** (`.github/dependabot.yml`) for the Docker `FROM`
+  base image and the GitHub Actions in the build workflow.
+  GitHub-native, zero install. It does *not* see the
+  `ARG xxx_VERSION` pins our Dockerfiles use to download release
+  binaries by URL — that was the "pin coverage limitation" we
+  anticipated.
+- **Renovate** (`renovate.json`) covers exactly that gap: a
+  customManager reads the `# renovate:` annotation above each
+  tracked `ARG` (yq, glab, scw, act, kubectl, helm) and opens
+  bump PRs weekly. `NODE_MAJOR` is deliberately excluded — it's a
+  manual LTS floor, never auto-narrowed.
 - **Weekly cron rebuild** on the CI workflow so upstream apt /
   npm / pip patches flow through even when no Dockerfile commit
   happened.
@@ -170,7 +189,8 @@ catalog entry), not five.
 ## What we keep from dc-toolbelt
 
 - Layered FROM chain rooted at one base.
-- Claude CLI in the base, agent-ready by default.
+- Agents in the base, agent-ready by default (here: OpenCode +
+  Claude, where dc-toolbelt shipped Claude alone).
 - Zsh + Oh My Zsh.
 - Templates paired with Dockerfiles.
 - Named volumes for CLI state so credentials survive rebuilds.

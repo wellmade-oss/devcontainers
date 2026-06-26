@@ -1,0 +1,31 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "schedule": ["* * * * 1"],
+  "commitMessagePrefix": "chore(deps):",
+  "labels": ["dependencies"],
+  "description": [
+    "Dependabot (see .github/dependabot.yml) covers Docker FROM lines and",
+    "GitHub Actions. It does NOT track the `ARG xxx_VERSION` pins our",
+    "Dockerfiles use to download release binaries by URL — that is what this",
+    "Renovate config is for. The CLAUDE.md auto-update plan calls this the",
+    "'small migration' to Renovate once pin coverage became a limitation.",
+    "",
+    "Each tracked ARG carries a `# renovate:` annotation above it in the",
+    "Dockerfile; the customManager below reads those annotations.",
+    "",
+    "NODE_MAJOR is deliberately NOT tracked here: it is an LTS *floor*, bumped",
+    "by hand when a new Node LTS is adopted, never auto-narrowed."
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Bump `ARG xxx_VERSION` release-binary pins annotated with a renovate comment",
+      "managerFilePatterns": ["/images/.*/Dockerfile$/"],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)(?:\\s+registryUrl=(?<registryUrl>\\S+))?\\s*\\n\\s*ARG\\s+\\w+=v?(?<currentValue>[\\d.]+)"
+      ],
+      "versioningTemplate": "semver"
+    }
+  ]
+}
