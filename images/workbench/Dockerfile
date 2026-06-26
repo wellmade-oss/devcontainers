@@ -72,7 +72,7 @@ USER root
 # Scaleway CLI (EU-default). Asset names switched to amd64/arm64
 # (used to be x86_64) — dpkg --print-architecture matches directly now.
 # renovate: datasource=github-releases depName=scaleway/scaleway-cli
-ARG SCW_VERSION=2.56.1
+ARG SCW_VERSION=2.58.3
 RUN ARCH=$(dpkg --print-architecture) \
  && curl -fsSL "https://github.com/scaleway/scaleway-cli/releases/download/v${SCW_VERSION}/scaleway-cli_${SCW_VERSION}_linux_${ARCH}" \
       -o /usr/local/bin/scw \
