@@ -132,7 +132,7 @@ RUN install -m 0755 -d /etc/apt/keyrings \
 # `apt upgrade` — but the image's `:v1` tag is rebuilt weekly anyway, and
 # Renovate bumps these ARGs (see renovate.json).
 # renovate: datasource=github-releases depName=kubernetes/kubernetes
-ARG KUBECTL_VERSION=v1.36.1
+ARG KUBECTL_VERSION=v1.36.2
 # renovate: datasource=github-releases depName=helm/helm
 ARG HELM_VERSION=v4.2.0
 RUN ARCH=$(dpkg --print-architecture) \
