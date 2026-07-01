@@ -179,9 +179,13 @@ USER root
 # ~/.claude/skills symlink is NOT created at build time — devcontainer.json
 # mounts a volume on ~/.claude/, which would shadow it. postcreate.sh
 # recreates it inside the volume on first container start.
+# atelier-ai still lives under wellmade-studio — it hasn't migrated to the
+# wellmade-oss org yet. Kept as an ARG so the move is a one-line flip (or a
+# build-time override) once wellmade-oss/atelier-ai exists.
+ARG ATELIER_AI_ORG=wellmade-studio
 ARG ATELIER_AI_REF=main
 RUN git clone --depth=1 --branch "${ATELIER_AI_REF}" \
-      https://github.com/wellmade-oss/atelier-ai.git \
+      https://github.com/${ATELIER_AI_ORG}/atelier-ai.git \
       /opt/wellmade/atelier-ai
 
 # Container lifecycle script invoked by devcontainer.json postCreateCommand.
