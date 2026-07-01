@@ -3,14 +3,14 @@
 Self-rooted dev container images for the Wellmade toolchain.
 Two images, agent-ready by default, EU-cloud bias.
 
-Published to [`ghcr.io/wellmade-studio/dc-*`](https://github.com/orgs/wellmade-studio/packages?repo_name=devcontainers).
+Published to [`ghcr.io/wellmade-oss/dc-*`](https://github.com/orgs/wellmade-oss/packages?repo_name=devcontainers).
 
 ## The images
 
 ### `core` — agent-ready base
 
 ```
-ghcr.io/wellmade-studio/dc-core:v1
+ghcr.io/wellmade-oss/dc-core:v1
 ```
 
 Debian-slim with the agent layer preinstalled: Claude CLI,
@@ -25,7 +25,7 @@ need a thinner, more focused container than `workbench`.
 ### `workbench` — daily driver
 
 ```
-ghcr.io/wellmade-studio/dc-workbench:v1
+ghcr.io/wellmade-oss/dc-workbench:v1
 ```
 
 `FROM core`. The image you reach for unless you have a reason

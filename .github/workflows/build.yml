@@ -26,11 +26,11 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  # Images publish flat under the org (ghcr.io/wellmade-studio/dc-*),
+  # Images publish flat under the org (ghcr.io/wellmade-oss/dc-*),
   # not nested under a devcontainers/ path. The `dc-` prefix
   # self-identifies the package family without the slash quirks of
   # hierarchical GHCR paths.
-  IMAGE_PREFIX: ghcr.io/wellmade-studio
+  IMAGE_PREFIX: ghcr.io/wellmade-oss
 
 jobs:
   build-core:

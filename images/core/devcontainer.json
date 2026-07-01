@@ -1,6 +1,6 @@
 {
   "name": "Wellmade core",
-  "image": "ghcr.io/wellmade-studio/dc-core:v1",
+  "image": "ghcr.io/wellmade-oss/dc-core:v1",
   "remoteUser": "wm",
   "containerUser": "wm",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",

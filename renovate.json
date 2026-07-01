@@ -6,7 +6,7 @@
   "labels": ["dependencies"],
   "description": [
     "Runs via the Mend hosted Renovate GitHub App (installed on",
-    "wellmade-studio, scoped to this repo) — NOT a self-hosted CI runner:",
+    "wellmade-oss, scoped to this repo) — NOT a self-hosted CI runner:",
     "this is a public repo, so we keep any write-scoped token off our own",
     "CI surface.",
     "",

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.25
 #
-# wellmade-studio/dc-core
+# wellmade-oss/dc-core
 #
 # Agent-ready Debian-slim base. No language runtimes, no cloud CLIs.
 # Every Wellmade devcontainer image extends this one.
@@ -181,7 +181,7 @@ USER root
 # recreates it inside the volume on first container start.
 ARG ATELIER_AI_REF=main
 RUN git clone --depth=1 --branch "${ATELIER_AI_REF}" \
-      https://github.com/wellmade-studio/atelier-ai.git \
+      https://github.com/wellmade-oss/atelier-ai.git \
       /opt/wellmade/atelier-ai
 
 # Container lifecycle script invoked by devcontainer.json postCreateCommand.

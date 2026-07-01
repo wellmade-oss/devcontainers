@@ -10,7 +10,7 @@
 schema_version = 1
 
 [catalog]
-registry = "ghcr.io/wellmade-studio"
+registry = "ghcr.io/wellmade-oss"
 image_prefix = "dc-"
 # Rolling major tag. Bumps automatically on every merge to main.
 # Breaking changes warrant a new major (v2) — should be rare.

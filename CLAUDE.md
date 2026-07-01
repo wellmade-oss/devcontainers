@@ -1,9 +1,9 @@
 # devcontainers/
 
 This folder is the **just-created** sibling repo
-`wellmade-studio/devcontainers`. It will hold Wellmade's curated
+`wellmade-oss/devcontainers`. It will hold Wellmade's curated
 dev container images, published to
-`ghcr.io/wellmade-studio/dc-*`.
+`ghcr.io/wellmade-oss/dc-*`.
 
 If you're Claude Code reading this, the situation is:
 
@@ -156,7 +156,7 @@ footprint, common enough to justify.
   GitHub App** — *not* a self-hosted CI runner. This is a public
   repo, so we deliberately keep any write-scoped token off our
   own CI surface; Mend holds its own credentials and runs the
-  engine. The app is installed on `wellmade-studio`, scoped to
+  engine. The app is installed on `wellmade-oss`, scoped to
   this repo only. Renovate's customManager reads the `# renovate:`
   annotation above each tracked `ARG` (yq, glab, scw, act,
   kubectl, helm + the OpenCode and Claude pins) and opens bump
