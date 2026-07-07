@@ -62,7 +62,7 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
 # any glibc Linux). dpkg --print-architecture already returns amd64/arm64,
 # which is exactly what glab's filenames use.
 # renovate: datasource=gitlab-releases depName=gitlab-org/cli
-ARG GLAB_VERSION=1.105.0
+ARG GLAB_VERSION=1.107.0
 RUN ARCH=$(dpkg --print-architecture) \
  && curl -fsSL "https://gitlab.com/gitlab-org/cli/-/releases/v${GLAB_VERSION}/downloads/glab_${GLAB_VERSION}_linux_${ARCH}.tar.gz" \
       | tar -xz -C /tmp \
