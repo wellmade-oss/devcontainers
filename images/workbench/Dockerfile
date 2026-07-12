@@ -79,8 +79,11 @@ RUN ARCH=$(dpkg --print-architecture) \
  && chmod +x /usr/local/bin/scw
 
 # Ansible (core only — not the full collections bundle).
+# acl: ships setfacl/getfacl — needed for fine-grained permission
+# handoffs (e.g. sharing the mounted docker socket / mounted volumes
+# across the wm user without chowning the host's files).
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ansible-core \
+ && apt-get install -y --no-install-recommends ansible-core acl \
  && rm -rf /var/lib/apt/lists/*
 
 # 1Password CLI.
@@ -113,7 +116,27 @@ RUN ARCH=$(dpkg --print-architecture); \
       | tar -xz -C /usr/local/bin act \
  && chmod +x /usr/local/bin/act
 
+# --- terminal multiplexer: zellij ----------------------------------------
+# Rust binary, GitHub releases. Its asset names use the Rust target triple
+# (x86_64/aarch64-unknown-linux-musl), so map dpkg's amd64/arm64 across —
+# same shape as act above. The musl build is statically linked, so it runs
+# on Debian without extra libs.
+# renovate: datasource=github-releases depName=zellij-org/zellij
+ARG ZELLIJ_VERSION=0.44.3
+RUN ARCH=$(dpkg --print-architecture); \
+    case "$ARCH" in \
+      amd64) ZJ_ARCH=x86_64 ;; \
+      arm64) ZJ_ARCH=aarch64 ;; \
+      *)     echo "unsupported arch: $ARCH" >&2; exit 1 ;; \
+    esac \
+ && curl -fsSL "https://github.com/zellij-org/zellij/releases/download/v${ZELLIJ_VERSION}/zellij-${ZJ_ARCH}-unknown-linux-musl.tar.gz" \
+      | tar -xz -C /usr/local/bin zellij \
+ && chmod +x /usr/local/bin/zellij
+
 # Docker CLI only (no daemon — uses the mounted host socket).
+# Compose v2 (docker-compose-plugin) ships alongside the CLI so `docker
+# compose` works against the mounted host socket. It's the plugin, not the
+# legacy `docker-compose` v1 python script — invoked as `docker compose`.
 RUN install -m 0755 -d /etc/apt/keyrings \
  && curl -fsSL https://download.docker.com/linux/debian/gpg \
       | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
@@ -121,9 +144,20 @@ RUN install -m 0755 -d /etc/apt/keyrings \
  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
       > /etc/apt/sources.list.d/docker.list \
  && apt-get update \
- && apt-get install -y --no-install-recommends docker-ce-cli docker-buildx-plugin \
+ && apt-get install -y --no-install-recommends docker-ce-cli docker-buildx-plugin docker-compose-plugin \
  && rm -rf /var/lib/apt/lists/* \
  && usermod -aG docker wm || groupadd docker && usermod -aG docker wm
+
+# --- local TLS: mkcert ----------------------------------------------------
+# Generates locally-trusted dev certificates (no CA warnings in the browser
+# for https://localhost). Go binary from GitHub releases; asset names use
+# amd64/arm64, matching dpkg directly — no arch remap needed.
+# renovate: datasource=github-releases depName=FiloSottile/mkcert
+ARG MKCERT_VERSION=v1.4.4
+RUN ARCH=$(dpkg --print-architecture) \
+ && curl -fsSL "https://github.com/FiloSottile/mkcert/releases/download/${MKCERT_VERSION}/mkcert-${MKCERT_VERSION}-linux-${ARCH}" \
+      -o /usr/local/bin/mkcert \
+ && chmod +x /usr/local/bin/mkcert
 
 # --- Kubernetes: kubectl + helm ------------------------------------------
 # Direct binary install (no apt repo, no GPG). Avoids the apt-repo +
