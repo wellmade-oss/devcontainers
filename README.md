@@ -5,6 +5,23 @@ Two images, agent-ready by default, EU-cloud bias.
 
 Published to [`ghcr.io/wellmade-oss/dc-*`](https://github.com/orgs/wellmade-oss/packages?repo_name=devcontainers).
 
+## Quick start
+
+From the root of your project:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/wellmade-oss/devcontainers/main/init.sh | sh
+```
+
+The wizard asks which image you want and what to name the
+container, then writes `.devcontainer/devcontainer.json`. No
+dependencies beyond `curl` and a POSIX shell — no Node, no `jq`,
+nothing to install first. In a non-interactive shell (CI) it
+takes the defaults and writes the file without prompting.
+
+Then open the folder in VS Code and run **Dev Containers: Reopen
+in Container**.
+
 ## The images
 
 ### `core` — agent-ready base
@@ -39,20 +56,33 @@ not to.
 - **1Password CLI**
 - **`act`** for local GitHub Actions runs (needs host Docker
   socket — devcontainer.json mounts it)
+- **Docker CLI** + Compose v2 (`docker compose`) + buildx —
+  client only, driving the mounted host socket (no
+  Docker-in-Docker)
+- **`mkcert`** for locally-trusted dev TLS + **`acl`**
+  (`setfacl`) for permission handoffs
 - **kubectl + helm**
+- **`zellij`** terminal multiplexer (sessions survive dropped
+  remote connections)
 
 ## Usage
 
-Drop one of the [`devcontainer.json` templates](./images) into
-your project's `.devcontainer/` directory:
+The [Quick start](#quick-start) `init.sh` wizard above is the
+supported path — it picks the image, names the container, and
+writes the file for you.
+
+Prefer to do it by hand? Drop one of the
+[`devcontainer.json` templates](./images) into your project's
+`.devcontainer/` directory:
 
 ```bash
 mkdir -p .devcontainer
 cp /path/to/devcontainers/images/workbench/devcontainer.json .devcontainer/
 ```
 
-Or use [`wm devcontainer`](../cli/) when it lands — it picks the
-right image from `catalog.toml` and writes the template for you.
+A future [`wm devcontainer`](../cli/) will wrap the same logic
+once the CLI lands — the `init.sh` curl entrypoint stays as the
+no-CLI path regardless.
 
 ## Persisted state
 

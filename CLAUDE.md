@@ -70,7 +70,7 @@ That's it. Two images at launch.
 - System: `git`, `gh`, `glab`, `curl`, `wget`, `ca-certificates`,
   `gnupg`, `jq`, `yq`, `ripgrep`, `fd-find`, `tree`, `less`,
   `procps`, `build-essential`, `unzip`, `zip`, `xz-utils`,
-  `postgresql-client`, `sqlite3`.
+  `postgresql-client`, `sqlite3`, `vim`.
 - **Agent layer**: **OpenCode** (model-agnostic baseline) +
   **Claude** (native install), **atelier-ai** skills (stable
   install path; `.claude/` skel'd into new user homes), **`wm`
@@ -116,8 +116,32 @@ reason not to.
   mounted into the container** (NOT Docker-in-Docker — see
   below); the devcontainer.json template documents the mount.
 
+**Docker client:** `docker-ce-cli` + `docker-buildx-plugin` +
+`docker-compose-plugin` (Compose v2, invoked as `docker
+compose` — the plugin, not the legacy v1 python `docker-compose`
+script). Client only, no daemon — everything drives the mounted
+host socket, same as `act`. These come straight from Docker's apt
+repo (`download.docker.com`), so `apt upgrade` / the weekly
+rebuild keep them current; no pinned ARG to Renovate-track.
+
+**Local dev extras:**
+- **`acl`** (apt) — ships `setfacl`/`getfacl` for fine-grained
+  permission handoffs (sharing the mounted docker socket /
+  volumes without host-file chowns).
+- **`mkcert`** ([FiloSottile/mkcert](https://github.com/FiloSottile/mkcert)) —
+  locally-trusted dev certificates, no browser CA warnings on
+  `https://localhost`. Go binary from GitHub releases, pinned +
+  Renovate-tracked like act/zellij.
+
 **Kubernetes:** `kubectl` + `helm` ship by default. Small
 footprint, common enough to justify.
+
+**Terminal multiplexer:** **`zellij`**
+([zellij-org/zellij](https://github.com/zellij-org/zellij)) — Rust
+binary, installed from GitHub releases (statically-linked musl
+build, Renovate-tracked like the other pinned ARGs). Sessions
+survive a dropped SSH/remote connection, which matters for long
+agent runs on a remote box.
 
 ## Hard "don't"s
 
@@ -159,7 +183,7 @@ footprint, common enough to justify.
   engine. The app is installed on `wellmade-oss`, scoped to
   this repo only. Renovate's customManager reads the `# renovate:`
   annotation above each tracked `ARG` (yq, glab, scw, act,
-  kubectl, helm + the OpenCode and Claude pins) and opens bump
+  mkcert, kubectl, helm + the OpenCode and Claude pins) and opens bump
   PRs weekly. `NODE_MAJOR` is deliberately excluded — it's a
   manual LTS floor, never auto-narrowed. The OpenCode pin tracks
   the `anomalyco/opencode` *repo releases*, not an npm package
