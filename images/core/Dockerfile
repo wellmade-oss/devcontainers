@@ -30,6 +30,7 @@ RUN apt-get update \
       ca-certificates curl wget gnupg lsb-release apt-transport-https \
       git openssh-client \
       zsh \
+      vim \
       sudo \
       build-essential pkg-config \
       jq ripgrep fd-find tree less procps file \
