@@ -168,7 +168,7 @@ RUN ARCH=$(dpkg --print-architecture) \
 # renovate: datasource=github-releases depName=kubernetes/kubernetes
 ARG KUBECTL_VERSION=v1.36.2
 # renovate: datasource=github-releases depName=helm/helm
-ARG HELM_VERSION=v4.2.2
+ARG HELM_VERSION=v4.2.3
 RUN ARCH=$(dpkg --print-architecture) \
  && curl -fsSL "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl" \
       -o /usr/local/bin/kubectl \
