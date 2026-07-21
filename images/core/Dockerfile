@@ -156,7 +156,7 @@ ENV PATH=/home/${USERNAME}/.opencode/bin:/home/${USERNAME}/.local/bin:${PATH}
 # package name) keeps the version feed from ever drifting to the wrong
 # project. (As of writing both report 1.17.11 — same lineage, same version.)
 # renovate: datasource=github-releases depName=anomalyco/opencode
-ARG OPENCODE_VERSION=1.17.11
+ARG OPENCODE_VERSION=1.18.4
 USER ${USERNAME}
 RUN curl -fsSL https://opencode.ai/install | VERSION="${OPENCODE_VERSION}" bash -s -- --no-modify-path
 USER root
