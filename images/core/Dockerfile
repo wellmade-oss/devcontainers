@@ -167,7 +167,7 @@ USER root
 # the binary still background-auto-updates per user at runtime. Installed as
 # the wm user so it lands in their home (~/.local/bin, already on PATH above).
 # renovate: datasource=npm depName=@anthropic-ai/claude-code
-ARG CLAUDE_CODE_VERSION=2.1.195
+ARG CLAUDE_CODE_VERSION=2.1.219
 USER ${USERNAME}
 RUN curl -fsSL https://claude.ai/install.sh | bash -s "${CLAUDE_CODE_VERSION}"
 USER root
