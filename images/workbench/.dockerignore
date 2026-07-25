@@ -1,0 +1,5 @@
+# workbench COPYs nothing — it's FROM core + RUN steps only. So the build
+# context needs nothing but the Dockerfile (which buildkit always sends
+# regardless of this file). Ignore everything else so devcontainer.json and
+# any future local files never leak into the context or bust the cache.
+*

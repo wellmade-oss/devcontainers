@@ -1,0 +1,8 @@
+# Allow-list: the build context should contain ONLY the files this image
+# actually COPYs. Everything else (devcontainer.json, editor cruft, future
+# local files) is excluded so it can't leak into a layer or bust the cache.
+#
+# Ignore everything, then un-ignore exactly what the Dockerfile COPYs.
+*
+!starship.toml
+!postcreate.sh

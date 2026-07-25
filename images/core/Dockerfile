@@ -8,6 +8,12 @@
 ARG DEBIAN_VERSION=bookworm
 FROM debian:${DEBIAN_VERSION}-slim
 
+# Fail a RUN if ANY stage of a pipe fails, not just the last. Many steps below
+# pipe `curl … | tar`/`| bash` — without pipefail a 404'd curl whose output
+# still lets tar/bash exit 0 bakes a silently-broken image. (This is why the
+# old DL4006-ignore justification was wrong; the ignore has been dropped.)
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 ARG USERNAME=wm
 ARG USER_UID=1000
 ARG USER_GID=${USER_UID}
@@ -202,10 +208,19 @@ RUN mkdir -p /home/${USERNAME}/.config/gh \
              /home/${USERNAME}/.config/glab-cli \
              /home/${USERNAME}/.claude \
              /home/${USERNAME}/.ssh \
+             /home/${USERNAME}/.vscode-server \
  && chmod 700 /home/${USERNAME}/.ssh \
  && chown -R ${USER_UID}:${USER_GID} /home/${USERNAME}
 
 USER ${USERNAME}
 WORKDIR /home/${USERNAME}
 
-CMD ["zsh", "-l"]
+# Keepalive, NOT a shell. This is a devcontainer base image: the tooling
+# (VS Code / the `devcontainer` CLI) keeps the container running and opens
+# every interactive shell via `docker exec … zsh -l` — it does NOT attach to
+# PID 1. A login shell as CMD would exit on EOF when no TTY is attached and
+# take the container down with it; `sleep infinity` just idles. This mirrors
+# mcr.microsoft.com/devcontainers/* and what devcontainer.json's
+# `overrideCommand` (default true) would force anyway. Don't "fix" this back
+# to a shell — for a plain throwaway shell, run `docker run -it <image> zsh -l`.
+CMD ["sleep", "infinity"]

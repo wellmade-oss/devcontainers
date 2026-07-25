@@ -101,6 +101,21 @@ jobs:
           tags: |
             ${{ env.IMAGE_PREFIX }}/dc-workbench:v1
             ${{ env.IMAGE_PREFIX }}/dc-workbench:latest
+          # Also read core's buildcache, so on a PUSH to main that changes
+          # both images, workbench reuses the core layers build-core (needs:)
+          # just wrote — faster, and consistent with the core it was built
+          # against this run.
+          #
+          # KNOWN LIMITATION (PRs): on pull_request events, build-core does
+          # NOT push cache (cache-to and registry login are both gated to
+          # non-PR), so this cache-from resolves to the LAST main-build core
+          # cache, and workbench's `FROM dc-core:v1` resolves to the published
+          # :v1 — neither reflects the PR's core changes. So a breaking core
+          # change is still not fully caught at PR time; the weekly rebuild
+          # (and the next main build) catches it. Closing this properly means
+          # pushing a PR-scoped core tag and pointing CORE_TAG at it —
+          # deliberately deferred to keep registry writes off the PR surface.
           cache-from: |
             type=registry,ref=${{ env.IMAGE_PREFIX }}/dc-workbench:buildcache,ignore-error=true
+            type=registry,ref=${{ env.IMAGE_PREFIX }}/dc-core:buildcache,ignore-error=true
           cache-to: ${{ github.event_name != 'pull_request' && format('type=registry,ref={0}/dc-workbench:buildcache,mode=max', env.IMAGE_PREFIX) || '' }}

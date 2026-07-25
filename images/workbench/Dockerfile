@@ -8,6 +8,11 @@
 ARG CORE_TAG=v1
 FROM ghcr.io/wellmade-oss/dc-core:${CORE_TAG}
 
+# SHELL is not inherited across FROM — re-declare pipefail here so the many
+# `curl … | tar`/`| bash` steps below fail on a broken download rather than
+# baking a silently-broken image. See the same note in core/Dockerfile.
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 USER root
 
 # --- Node LTS toolchain ---------------------------------------------------
@@ -137,6 +142,13 @@ RUN ARCH=$(dpkg --print-architecture); \
 # Compose v2 (docker-compose-plugin) ships alongside the CLI so `docker
 # compose` works against the mounted host socket. It's the plugin, not the
 # legacy `docker-compose` v1 python script — invoked as `docker compose`.
+#
+# We create a `docker` group and add wm to it, but note: the mounted host
+# socket carries the HOST's docker GID, which won't generally match this
+# statically-created group. Socket access therefore depends on the socket's
+# own permissions at runtime, not this group membership — the group just
+# avoids "group docker does not exist" noise. Aligning to the host socket GID
+# is a runtime concern (see docs/uid-gid-alignment.md).
 RUN install -m 0755 -d /etc/apt/keyrings \
  && curl -fsSL https://download.docker.com/linux/debian/gpg \
       | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
@@ -146,7 +158,8 @@ RUN install -m 0755 -d /etc/apt/keyrings \
  && apt-get update \
  && apt-get install -y --no-install-recommends docker-ce-cli docker-buildx-plugin docker-compose-plugin \
  && rm -rf /var/lib/apt/lists/* \
- && usermod -aG docker wm || groupadd docker && usermod -aG docker wm
+ && groupadd -f docker \
+ && usermod -aG docker wm
 
 # --- local TLS: mkcert ----------------------------------------------------
 # Generates locally-trusted dev certificates (no CA warnings in the browser
@@ -190,4 +203,7 @@ RUN mkdir -p /home/wm/.config/scw \
 USER wm
 WORKDIR /home/wm
 
-CMD ["zsh", "-l"]
+# Keepalive, NOT a shell — see the same note in core/Dockerfile. workbench is
+# FROM core (which already sets this), but we spell it out so the intent is
+# visible here too and nobody "fixes" it back to a login shell.
+CMD ["sleep", "infinity"]

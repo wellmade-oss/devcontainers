@@ -11,9 +11,11 @@ ignored:
   # DL3016: pin npm versions. Rolling :v1 image tag pulls latest globals on
   #         every rebuild — pinning would defeat the "stay current" promise.
   - DL3016
-  # DL4006: SHELL with pipefail. We don't pipe through long chains where
-  #         partial failure matters; rules out a lot of noise.
-  - DL4006
+  # DL4006 (SHELL with pipefail) is intentionally NOT ignored: both
+  # Dockerfiles set `SHELL ["/bin/bash", "-o", "pipefail", "-c"]` so their
+  # many `curl … | tar`/`| bash` steps fail on a broken download. Keeping the
+  # rule live means a future unguarded pipe in a plain `sh -c` context gets
+  # flagged.
 trustedRegistries:
   - ghcr.io
   - docker.io

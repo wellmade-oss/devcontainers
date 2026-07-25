@@ -19,12 +19,9 @@ updates:
       prefix: chore
       include: scope
 
-  # GitHub Actions used in the build workflow.
-  - package-ecosystem: github-actions
-    directory: /
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
-    commit-message:
-      prefix: chore
-      include: scope
+  # NOTE: GitHub Actions updates are owned by RENOVATE (config:recommended
+  # manages actions out of the box), not Dependabot — otherwise both open PRs
+  # for the same Action bumps. Dependabot keeps only the `docker` ecosystem
+  # above (FROM base-image digests), which it handles well. If you'd rather
+  # Dependabot own Actions, disable Renovate's actions manager instead and
+  # re-add a `github-actions` block here.

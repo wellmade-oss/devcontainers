@@ -189,14 +189,12 @@ agent runs on a remote box.
   the `anomalyco/opencode` *repo releases*, not an npm package
   name (see the Dockerfile comment for why).
 - **Dependabot** (`.github/dependabot.yml`) — GitHub-native,
-  zero install. Originally added for the Docker `FROM` base image
-  *and* GitHub Actions. **Heads-up / cleanup:** now that Renovate
-  is active it also manages GitHub Actions, so Dependabot's
-  `github-actions` entry overlaps and both will open PRs for the
-  same Action bumps. Pick one owner for Actions (simplest: drop
-  the `github-actions` block from `dependabot.yml` and let
-  Renovate own it, leaving Dependabot to the `FROM` digests it's
-  good at — or disable Renovate's actions manager instead).
+  zero install. Now scoped to the Docker `FROM` base image only.
+  GitHub Actions ownership was resolved: **Renovate owns Actions**
+  (it manages them out of the box), and the `github-actions` block
+  was dropped from `dependabot.yml` so the two don't both open PRs
+  for the same Action bumps. To flip ownership, disable Renovate's
+  actions manager and re-add the Dependabot block.
 - **Weekly cron rebuild** on the CI workflow so upstream apt /
   npm / pip patches flow through even when no Dockerfile commit
   happened.

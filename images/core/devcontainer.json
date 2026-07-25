@@ -5,6 +5,12 @@
   "containerUser": "wm",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
+  // Run the container with an init process (tini). The image's CMD is
+  // `sleep infinity`, which as PID 1 does NOT reap zombies — so forked/
+  // daemonized children (agent auto-updaters, act, node subprocesses) would
+  // pile up as defunct processes. `init: true` makes the CLI pass --init.
+  "init": true,
+
   // ---------------------------------------------------------------------
   // Persisted state — named Docker volumes survive container rebuilds.
   //
@@ -27,7 +33,11 @@
     "source=wellmade-state-glab,target=/home/wm/.config/glab-cli,type=volume",
 
     // SSH identity.
-    "source=wellmade-state-ssh,target=/home/wm/.ssh,type=volume"
+    "source=wellmade-state-ssh,target=/home/wm/.ssh,type=volume",
+
+    // VS Code server — cached so it isn't re-downloaded on every rebuild.
+    // cache-tier (safe to prune): it re-populates on next attach.
+    "source=wellmade-cache-vscode-server,target=/home/wm/.vscode-server,type=volume"
   ],
 
   "customizations": {
