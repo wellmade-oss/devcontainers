@@ -116,6 +116,28 @@ RUN cat <<'STARSHIP_INIT' >> /home/${USERNAME}/.zshrc
 eval "$(starship init zsh)"
 STARSHIP_INIT
 
+# --- fix: zellij-in-tmux leaks each command name before it runs -----------
+# oh-my-zsh sets the terminal title from precmd/preexec. For TERM=screen*/tmux*
+# it emits the GNU-screen hardstatus sequence (ESC k … ESC \), which only
+# screen and tmux parse. Zellij inherits tmux's TERM when nested inside it but
+# has no ESC k handler, so it renders the payload as text — every command
+# echoes its own name before running (and the prompt shows a stray `%`). This
+# is upstream omz behaviour, not drift, so `omz update` won't undo the fix.
+#
+# Scoped to $ZELLIJ (set in every zellij pane) so plain tmux keeps working
+# titles. `if` rather than `&&` so a non-zellij shell leaves $? at 0 — this is
+# the LAST thing in ~/.zshrc, and starship colours the first prompt from it.
+# Matches the homelab shell_env Ansible role's fix. See
+# docs/zellij-title-leak-fix.md for the full diagnosis.
+RUN cat <<'ZELLIJ_TITLE_FIX' >> /home/${USERNAME}/.zshrc
+
+# Disable omz auto-title under zellij (its ESC k hardstatus sequence leaks as
+# text there — see docs/zellij-title-leak-fix.md).
+if [[ -n "$ZELLIJ" ]]; then
+  DISABLE_AUTO_TITLE=true
+fi
+ZELLIJ_TITLE_FIX
+
 # --- node (convenience runtime + npm for ad-hoc agent use) ---------------
 # Both agents below are native binaries that do NOT need Node (OpenCode and
 # Claude each install standalone). Node is kept here deliberately anyway: it
