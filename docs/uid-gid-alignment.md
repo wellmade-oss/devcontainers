@@ -18,11 +18,30 @@ and released in **v0.2.3** — confirmed working on the 1001 host. The fix
 lives in the launcher, where it belongs; every image `devcon` runs
 benefits, and the Wellmade images stay drop-in compatible with VS Code.
 
+**Image-side mitigation (shipped 2026-07-26):** alignment can still be
+*skipped* transiently — devcon logged `user-uid alignment timed out and
+was skipped` on one connect. When that happens wm stays at uid 1000
+while `$HOME` (and the persisted volumes + plain home files like
+`~/.zsh_history`) are host-uid-owned from a prior aligned run, so wm
+can't write them — symptoms were a failed `~/.claude/skills` symlink,
+Claude re-auth every rebuild, and `zsh: locking failed … permission
+denied` on shell exit. So the image now self-heals defensively:
+- `images/core/fix-ownership.sh` — `sudo chown -R` `$HOME` back to us
+  whenever `$HOME` isn't wm-owned (no-op otherwise). Wired to
+  **`postStartCommand`** (runs every start, not just create) and also
+  called at the top of `postcreate.sh`.
+- `postcreate.sh` no longer runs `set -e`; each step is isolated so one
+  failure warns instead of aborting — that abort was why the Claude-auth
+  persistence step was being skipped.
+
+This is mitigation, not the fix — the real cause (the timeout) is
+devcon's, briefed separately.
+
 The diagnostic and mechanism notes below are retained as reference for
 the next time a uid/gid symptom shows up (e.g. a different launcher, a
 CI runner, or rootless Docker).
 
-**Date:** 2026-07-13 (resolved 2026-07-25)
+**Date:** 2026-07-13 (resolved 2026-07-25; image mitigation 2026-07-26)
 
 ---
 

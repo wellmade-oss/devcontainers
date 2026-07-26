@@ -27,21 +27,12 @@ step() {
 }
 
 # ----- ownership self-heal (uid/gid mismatch recovery) ----------------------
-# The launcher (e.g. devcon / VS Code) is supposed to align wm's uid/gid to the
-# host before we run. If that alignment is skipped or times out, wm stays at
-# its baked uid while the persisted ~/.claude volume is owned by the HOST uid
-# from a previous successful run — every write below then fails "Permission
-# denied", which also breaks Claude auth persistence and re-prompts login.
-#
-# Defend against that here: if ~/.claude exists but isn't owned by us, take it
-# back with passwordless sudo (available in the image). Cheap, idempotent, and
-# a no-op in the normal aligned case. This does NOT fix the launcher — see
-# docs/uid-gid-alignment.md — it just keeps a uid hiccup from wrecking the
-# container's writable state.
-if [[ -e "${CLAUDE_DIR}" && ! -O "${CLAUDE_DIR}" ]]; then
-  echo "wellmade: ${CLAUDE_DIR} not owned by $(id -un) — self-healing ownership" >&2
-  step "chown ~/.claude" sudo chown -R "$(id -u):$(id -g)" "${CLAUDE_DIR}" || true
-fi
+# Runs first so the symlink/seed steps below inherit a writable $HOME even on a
+# rebuild onto a host-uid-owned volume. Same script is also wired to
+# postStartCommand so it catches a mismatch that appears on a plain start
+# (postCreateCommand only fires on create). See fix-ownership.sh for the full
+# rationale and docs/uid-gid-alignment.md for the launcher-side root cause.
+step "self-heal \$HOME ownership" /opt/wellmade/bin/fix-ownership.sh || true
 
 # ----- Claude: skills symlink ------------------------------------------------
 # The atelier-ai skills live in the image. The ~/.claude volume mount would

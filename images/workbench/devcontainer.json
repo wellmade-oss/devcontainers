@@ -71,5 +71,9 @@
     }
   },
 
-  "postCreateCommand": "/opt/wellmade/bin/postcreate.sh"
+  "postCreateCommand": "/opt/wellmade/bin/postcreate.sh",
+
+  // Self-heals /home/wm ownership on every start — see
+  // images/core/devcontainer.json for the rationale.
+  "postStartCommand": "/opt/wellmade/bin/fix-ownership.sh"
 }

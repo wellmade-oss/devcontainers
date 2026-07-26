@@ -6,3 +6,4 @@
 *
 !starship.toml
 !postcreate.sh
+!fix-ownership.sh

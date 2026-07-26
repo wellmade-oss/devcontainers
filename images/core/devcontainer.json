@@ -56,5 +56,11 @@
 
   // postCreateCommand runs once after volume mounts. Idempotent — safe on
   // rebuilds. See /opt/wellmade/bin/postcreate.sh in the image.
-  "postCreateCommand": "/opt/wellmade/bin/postcreate.sh"
+  "postCreateCommand": "/opt/wellmade/bin/postcreate.sh",
+
+  // postStartCommand runs on EVERY start (not just create). Self-heals
+  // /home/wm ownership when the launcher's uid alignment was skipped/timed
+  // out — otherwise host-uid-owned home files (e.g. ~/.zsh_history) become
+  // unwritable by wm. Idempotent no-op when ownership already matches.
+  "postStartCommand": "/opt/wellmade/bin/fix-ownership.sh"
 }

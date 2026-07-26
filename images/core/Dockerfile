@@ -217,9 +217,11 @@ RUN git clone --depth=1 --branch "${ATELIER_AI_REF}" \
       https://github.com/${ATELIER_AI_ORG}/atelier-ai.git \
       /opt/wellmade/atelier-ai
 
-# Container lifecycle script invoked by devcontainer.json postCreateCommand.
-COPY postcreate.sh /opt/wellmade/bin/postcreate.sh
-RUN chmod +x /opt/wellmade/bin/postcreate.sh \
+# Container lifecycle scripts invoked by devcontainer.json:
+#   postcreate.sh    — postCreateCommand (once, on create)
+#   fix-ownership.sh — postStartCommand (every start; also called by postcreate)
+COPY postcreate.sh fix-ownership.sh /opt/wellmade/bin/
+RUN chmod +x /opt/wellmade/bin/postcreate.sh /opt/wellmade/bin/fix-ownership.sh \
  && chown -R ${USERNAME}:${USERNAME} /opt/wellmade
 
 # Pre-create the directories that devcontainer.json volume-mounts onto.
