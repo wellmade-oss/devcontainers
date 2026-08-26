@@ -179,7 +179,7 @@ RUN ARCH=$(dpkg --print-architecture) \
 # `apt upgrade` — but the image's `:v1` tag is rebuilt weekly anyway, and
 # Renovate bumps these ARGs (see renovate.json).
 # renovate: datasource=github-releases depName=kubernetes/kubernetes
-ARG KUBECTL_VERSION=v1.36.3
+ARG KUBECTL_VERSION=v1.37.0
 # renovate: datasource=github-releases depName=helm/helm
 ARG HELM_VERSION=v4.2.4
 RUN ARCH=$(dpkg --print-architecture) \
