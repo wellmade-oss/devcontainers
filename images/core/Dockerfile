@@ -49,7 +49,7 @@ RUN apt-get update \
 
 # yq (Go binary, not in Debian stable yet at a recent version)
 # renovate: datasource=github-releases depName=mikefarah/yq
-ARG YQ_VERSION=4.53.3
+ARG YQ_VERSION=4.53.6
 RUN ARCH=$(dpkg --print-architecture) \
  && curl -fsSL "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_${ARCH}" -o /usr/local/bin/yq \
  && chmod +x /usr/local/bin/yq
