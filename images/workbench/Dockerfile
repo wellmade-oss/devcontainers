@@ -127,7 +127,7 @@ RUN ARCH=$(dpkg --print-architecture); \
 # same shape as act above. The musl build is statically linked, so it runs
 # on Debian without extra libs.
 # renovate: datasource=github-releases depName=zellij-org/zellij
-ARG ZELLIJ_VERSION=0.44.3
+ARG ZELLIJ_VERSION=0.45.1
 RUN ARCH=$(dpkg --print-architecture); \
     case "$ARCH" in \
       amd64) ZJ_ARCH=x86_64 ;; \
