@@ -51,10 +51,17 @@ fi
 # re-authenticating on every rebuild — it MUST run even if the steps above
 # failed, which is why the whole script no longer aborts on the first error.
 if [[ ! -L "${CLAUDE_JSON}" ]]; then
-  # First create: if the file already exists (newly-installed image with a
-  # freshly populated claude.json), move it into the volume before symlinking.
-  if [[ -f "${CLAUDE_JSON}" ]]; then
+  # A plain file here does NOT mean "first ever run". $HOME outside the mounts
+  # is rebuilt from the image every time, so anything the image bakes in at
+  # ~/.claude.json reappears as a plain file on EVERY rebuild. The volume's
+  # copy is the authority: seed from the container only when the volume has
+  # nothing, otherwise the image's file is stale and gets discarded. Seeding
+  # unconditionally clobbered real authenticated config with the image's
+  # blank stub and forced a re-login on every rebuild.
+  if [[ -f "${CLAUDE_JSON}" && ! -f "${CLAUDE_DIR}/claude.json" ]]; then
     step "seed claude.json into volume" mv "${CLAUDE_JSON}" "${CLAUDE_DIR}/claude.json" || true
+  elif [[ -f "${CLAUDE_JSON}" ]]; then
+    step "discard stale image-baked claude.json" rm -f "${CLAUDE_JSON}" || true
   fi
   # Create the symlink if the target either exists (re-using a primed volume)
   # or doesn't (claude will create it on first auth, into the volume).
