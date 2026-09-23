@@ -197,7 +197,13 @@ USER root
 # renovate: datasource=npm depName=@anthropic-ai/claude-code
 ARG CLAUDE_CODE_VERSION=2.1.263
 USER ${USERNAME}
-RUN curl -fsSL https://claude.ai/install.sh | bash -s "${CLAUDE_CODE_VERSION}"
+# The installer leaves behind an unauthenticated ~/.claude.json stub. Drop it:
+# $HOME outside the volume mounts is rebuilt from the image on every rebuild,
+# so a baked-in stub reappears as a plain file each time and used to overwrite
+# the volume's real config. postcreate.sh now guards against that too, but the
+# stub has no reason to ship in the first place.
+RUN curl -fsSL https://claude.ai/install.sh | bash -s "${CLAUDE_CODE_VERSION}" \
+ && rm -f "/home/${USERNAME}/.claude.json"
 USER root
 
 # wm CLI: design-phase repo, no published binary yet. Placeholder install
