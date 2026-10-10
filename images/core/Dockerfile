@@ -195,7 +195,7 @@ USER root
 # the binary still background-auto-updates per user at runtime. Installed as
 # the wm user so it lands in their home (~/.local/bin, already on PATH above).
 # renovate: datasource=npm depName=@anthropic-ai/claude-code
-ARG CLAUDE_CODE_VERSION=2.1.288
+ARG CLAUDE_CODE_VERSION=2.1.296
 USER ${USERNAME}
 # The installer leaves behind an unauthenticated ~/.claude.json stub. Drop it:
 # $HOME outside the volume mounts is rebuilt from the image on every rebuild,
