@@ -110,7 +110,7 @@ RUN curl -fsSL https://downloads.1password.com/linux/keys/1password.asc \
 # Local GitHub Actions runner. NEEDS host Docker socket mounted via
 # devcontainer.json (NOT Docker-in-Docker — that's deliberately rejected).
 # renovate: datasource=github-releases depName=nektos/act
-ARG ACT_VERSION=0.2.89
+ARG ACT_VERSION=0.2.97
 RUN ARCH=$(dpkg --print-architecture); \
     case "$ARCH" in \
       amd64) ACT_ARCH=x86_64 ;; \
